@@ -11,6 +11,7 @@ import {
 
 const List = () => {
     const [tideArray, setTideArray] = useState([]);
+    const [bestTide, setBestTide] = useState();
 
     useEffect(() => {
         ApiService.fetchTide()
@@ -18,33 +19,36 @@ const List = () => {
                 const tide = new Tide(data);
                 const tideData = tide.getTide();
                 setTideArray(tideData);
-                console.log('High tides for today:', tideData[0]);
+                console.log(data);
+                // const bestDay = tide.findBestFishingDay(data);
+                // console.log(bestDay);
+                // setBestTide(bestDay);
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
     }, []);
 
-    const renderItem = tideArray.map(item =>
-        <View style={styles.item}>
-            <View style={styles.item}>
-                <Text style={styles.title}>{item.date}</Text>
-            </View>
-            <View style={styles.cell}>
-                {item.hour.map(h => <Text style={styles.title}>{h}</Text>)}
-            </View>
-            <View style={styles.cell}>
-                {item.height.map(he => <Text style={styles.title}>{he}</Text>)}
-            </View>
-            <View style={styles.cell}>
-                {item.coeff.map(c => <Text style={styles.title}>{c}</Text>)}
+    const renderItem = tideArray.map((item, index) => (
+        <View key={`${item.date}_${index}`} style={styles.item}>
+            <View key={`${item.date}_${item.day}`} style={styles.item}>
+                <Text style={styles.title}>{item.day}{item.date}</Text>
+                {item.tides.map(element => (
+                    <View style={styles.cell} key={`${element.hour}_${element.height}_${element.coeff}`}>
+                        <Text style={styles.title}>{element.hour}</Text>
+                        <Text style={styles.title}>{element.height}</Text>
+                        <Text style={styles.title}>{element.coeff}</Text>
+                    </View>
+                ))}
             </View>
         </View>
-    );
+    ));
+
 
     return (
         <SafeAreaView style={styles.container}>
             {renderItem}
+            {/* <Text style={styles.item}>{bestTide}</Text> */}
         </SafeAreaView>
     );
 };

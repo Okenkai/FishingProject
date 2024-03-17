@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 class ApiService {
+
     static async fetchTide() {
         try {
-            const response = await axios.get('http://192.168.1.2:8080/tide/');
+            const response = await axios.get('http://192.168.1.25:8080/API/V1/main');
 
             return response.data;
 

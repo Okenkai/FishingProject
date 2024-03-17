@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FishingProject",
-    "slug": "FishingProject",
+    "slug": "fishing-project",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8aa465cd-ae01-40a8-a251-bd3702e2ff2a"
+      }
+    },
+    "owner": "lecroufoure"
   }
 }
