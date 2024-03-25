@@ -4,7 +4,7 @@ class ApiService {
 
     static async fetchTide() {
         try {
-            const response = await axios.get('http://192.168.1.25:8080/API/V1/main');
+            const response = await axios.get('http://192.168.1.11:8080/API/V1/main');
 
             return response.data;
 

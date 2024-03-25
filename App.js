@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import Home from './app/components/Home/Home';
 import List from './app/components/List/List';
-import NotificationService from './app/services/NotificationService';
+import { SocketProvider } from './app/context/Socket';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
@@ -17,20 +17,17 @@ const Stack = createNativeStackNavigator();
 
 const App = () => {
 
-  const [expoPushToken, setExpoPushToken] = useState('');
-
-  useEffect(() => {
-    NotificationService.registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="List" component={List} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <SocketProvider>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Home">
+            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="List" component={List} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SocketProvider>
     </SafeAreaView>
 
   );
