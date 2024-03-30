@@ -25,7 +25,7 @@ const chartConfig = {
     useShadowColorFromDataset: false // optional
 };
 
-const List = () => {
+const TideComponent = () => {
     const [tideArray, setTideArray] = useState([]);
 
     useEffect(() => {
@@ -84,7 +84,7 @@ const List = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#6a51ae" />
+            <StatusBar barStyle="dark-content" backgroundColor="#6a51ae" />
             <ScrollView>
                 <Text style={styles.title}>Marées</Text>
                 {renderChart}
@@ -123,4 +123,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default List;
+export default TideComponent;

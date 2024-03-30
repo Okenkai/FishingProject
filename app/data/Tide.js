@@ -8,7 +8,7 @@ class TideManager {
         return this.data;
     }
 
-    getHighTidesForDate(date) {
+    getTideByDate(date) {
         return this.data.find(entry => entry.date === date);
     }
 
