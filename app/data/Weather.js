@@ -1,4 +1,4 @@
-class WeatherManager {
+class Weather {
 
     constructor(data) {
         this.data = data;
@@ -26,19 +26,39 @@ class WeatherManager {
 
 
     getWeatherByDate(date) {
-        return this.data.find(entry => entry.date === date);
+        return this.data.filter(entry => `${entry.day}.${entry.date}` === date);
+    }
+
+    getAverageTemperature() {
+
+        if (!Array.isArray(this.data)) {
+            throw new Error(`Data in Weather Object is not an array.`, 400);
+        }
+        const weatherTemperatureObject = this.data.flatMap(entry => entry.weather.map(weather => weather.temperature.metric));
+
+        const sum = + weatherTemperatureObject.map(temperature => parseInt(temperature)).reduce((acc, val) => acc + val, 0)
+
+        const average = weatherTemperatureObject.length > 0 ? sum / weatherTemperatureObject.length : 0;
+
+        return average;
+
     }
 
     browseData(dataName) {
-
         const weatherArray = [];
 
+        if (!Array.isArray(this.data)) {
+            throw new Error(`Data in Weather Object is not an array.`, 400);
+        }
         this.data.forEach(day => {
             const dailyWeather = {
                 date: `${day.day}.${day.date}`,
                 weather: []
             };
 
+            if (!Array.isArray(day.weather)) {
+                throw new Error(`Data in Weather Object is not an array.`, 400);
+            }
             day.weather.forEach(hour => {
                 dailyWeather.weather.push({
                     hour: hour.hour,
@@ -48,9 +68,9 @@ class WeatherManager {
 
             weatherArray.push(dailyWeather);
         });
+
         return weatherArray;
     }
-
 }
 
-export default WeatherManager;
+export default Weather;

@@ -7,59 +7,32 @@ import {
     View,
     StyleSheet,
     Text,
-    StatusBar,
     Image,
 } from 'react-native';
 
-const WeatherComponent = ({ navigation }) => {
-    const [weatherTemperature, setWeatherTemperature] = useState([]);
+const WeatherComponent = ({ weather, date }) => {
+
+    const [averageTemperature, setAverageTemperature] = useState([]);
+
     useEffect(() => {
+        if (weather) {
 
-        const fetchData = async () => {
-            try {
-                const data = await ApiService.fetchWeather();
-                const weather = new Weather(data);
-                const temperature = weather.getWeatherTemperature();
-                setWeatherTemperature(temperature);
-            } catch (error) {
-                console.error('Error fetching weather data:', error);
-            }
-        };
+            const weatherActive = weather.getWeatherByDate(date);
+            const weatherObject = new Weather(weatherActive);
+            const averageTemperature = weatherObject.getAverageTemperature();
+            console.log(averageTemperature);
+            setAverageTemperature(averageTemperature);
 
-        fetchData();
-
-    }, []);
-
-    const Temperature = weatherTemperature.map((item, index) => {
-
-        return (
-            <View key={`${item.date}_${index}`} style={styles.item}>
-
-                <View key={`${item.date}_${item.day}`} style={styles.item}>
-                    <Text style={styles.text}>{item.date}</Text>
-                    <View style={styles.cell}>
-                        {item.weather.map(weather => {
-                            const isCelcius = weather.temperature.type === 'celcius';
-                            return (
-                                <View style={styles.item} key={`${weather.hour}_${item.index}`}>
-                                    <Text style={styles.text}>{weather.hour}</Text>
-                                    <Text style={styles.text}>{weather.temperature.metric}{isCelcius ? '°C' : '°F'}</Text>
-                                </View>
-                            )
-                        })}
-                    </View>
-                </View>
-            </View>
-        )
-    })
+        }
+    }, [date, weather]);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#6a51ae" />
-            <ScrollView>
-                {Temperature}
-            </ScrollView>
-        </SafeAreaView>
+        <View style={styles.container}>
+            <Text style={styles.weatherTitle}>Météo</Text>
+            <View>
+                <Text style={styles.averageTemperature}>{averageTemperature}°C</Text>
+            </View>
+        </View>
     )
 
 }
@@ -67,31 +40,19 @@ const WeatherComponent = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    item: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white',
-        padding: 4,
-    },
-    cell: {
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    text: {
-        fontSize: 12,
-        margin: 4,
-    },
-    title: {
-        flex: 1,
         margin: 16,
-        textAlign: 'center',
-        color: '#000',
-        fontSize: 28,
     },
+    weatherTitle: {
+        color: '#fff',
+        fontSize: 16,
+        textTransform: 'uppercase'
+    },
+    averageTemperature: {
+        color: '#fff',
+        fontSize: 32,
+        textAlign: 'center',
+        marginTop: 24,
+    }
 });
 
 export default WeatherComponent;

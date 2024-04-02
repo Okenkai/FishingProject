@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import ApiService from '../../services/ApiService';
-import Tide from '../../data/Tide';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
-    SafeAreaView,
     View,
     StyleSheet,
     Text,
-    StatusBar,
-    ScrollView,
     Dimensions,
 } from 'react-native';
 import { LineChart } from "react-native-chart-kit";
@@ -15,111 +11,151 @@ import { LineChart } from "react-native-chart-kit";
 const screenWidth = Dimensions.get("window").width;
 
 const chartConfig = {
-    backgroundGradientFrom: "#fff",
+    backgroundGradientFrom: "#808080",
     backgroundGradientFromOpacity: 0,
-    backgroundGradientTo: "#A0E7E5",
+    backgroundGradientTo: "#fff",
     backgroundGradientToOpacity: 0.5,
-    color: (opacity = 1) => `rgba(26, 25, 146, ${opacity})`,
-    strokeWidth: 2, // optional, default 3
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    strokeWidth: 2,
     barPercentage: 0.5,
-    useShadowColorFromDataset: false // optional
+    useShadowColorFromDataset: true // optional
 };
 
-const TideComponent = () => {
-    const [tideArray, setTideArray] = useState([]);
+
+const TideComponent = ({ tide, date }) => {
+    const [activeTide, setActiveTide] = useState(null);
+    const [tidesLength, setTidesLength] = useState(0);
 
     useEffect(() => {
-        ApiService.fetchTide()
-            .then(data => {
-                const tide = new Tide(data);
-                const tideData = tide.getTide();
-                setTideArray(tideData);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }, []);
+        if (tide) {
+            const tideByDate = tide.getTideByDate(date);
+            setActiveTide(tideByDate);
+        }
+    }, [date, tide]);
 
-    const renderChart = tideArray.map((item, index) => {
+    useEffect(() => {
+        if (activeTide) {
+            setTidesLength(activeTide.tides.length);
+        }
+    }, [activeTide]);
 
-        const tideHours = item.tides.map(tide => tide.hour);
-        const tideCoeffs = item.tides.map(tide => parseInt(tide.height.replace(/m/g, ','), 10));
-        return (
-            <View key={`${item.date}_${index}_main`}>
-                <LineChart
-                    key={index}
-                    data={{
-                        labels: tideHours,
-                        datasets: [
-                            {
-                                data: tideCoeffs
-                            }
-                        ],
-                        legend: [`${item.day}.${item.date}`]
-                    }}
-                    width={screenWidth}
-                    height={256}
-                    chartConfig={chartConfig}
-                    bezier
-                />
-                <View key={`${item.date}_${index}`} style={styles.item}>
-                    <View key={`${item.date}_${item.day}`} style={styles.item}>
-                        <Text style={styles.text}>{item.day}.{item.date}</Text>
-                        <View style={styles.cell}>
-                            {item.tides.map(element => (
-                                <View style={styles.item} key={`${element.hour}_${element.height}_${element.coeff}`}>
-                                    <Text style={styles.text}>{element.hour}</Text>
-                                    <Text style={styles.text}>{element.height}</Text>
-                                    <Text style={styles.text}>{element.coeff}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    </View>
-                </View>
+    if (!activeTide) {
+        return <Text>Loading...</Text>;
+    }
+
+    const coeffContainerStyle = {
+        margin: 16,
+        maxHeight: tidesLength === 3 ? 100 : 128,
+    };
+
+    const tideItems = activeTide.tides.map((tide, index) => (
+        <View key={index} style={index === 1 ? [styles.tideItem, styles.tideItemUnderline] : styles.tideItem}>
+            <View style={styles.tideColumn}>
+                <Text style={styles.tideHour}>{tide.hour}</Text>
             </View>
-        );
-    });
-
-
+            <View style={styles.tideColumn}>
+                <Text style={styles.tideHeight}>{tide.height}</Text>
+            </View>
+            <View style={tidesLength === 3 && index === 2 ? styles.tideColumn : styles.tideColumnCoeff}>
+                {index % 2 === 0 && <Text style={tidesLength === 3 && index === 2 ? styles.tideHeight : styles.tideCoeff}>{tide.coeff}</Text>}
+            </View>
+        </View>
+    ));
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#6a51ae" />
-            <ScrollView>
-                <Text style={styles.title}>Marées</Text>
-                {renderChart}
-            </ScrollView>
-        </SafeAreaView>
+        <View style={styles.container}>
+            <LineChart
+                data={{
+                    labels: activeTide.tides.map(tide => tide.hour),
+                    datasets: [
+                        {
+                            data: activeTide.tides.map(tide => parseInt(tide.height.replace(/m/g, ','), 10))
+                        }
+                    ],
+                    legend: ["Hauteurs en mètres"]
+                }}
+                width={screenWidth}
+                height={220}
+                chartConfig={chartConfig}
+                bezier
+                style={{
+                    margin: 16,
+                    borderRadius: 8,
+                }}
+            />
+            <View style={coeffContainerStyle}>
+                <Text style={styles.coeffTitle}>Coefficients</Text>
+                <View style={styles.coeffContentContainer}>
+                    <LinearGradient
+                        colors={['rgba(128, 128, 128, 0)', 'rgba(255,255,255,0.5)']}
+                        start={[0, 1]}
+                        end={[1, 0]}
+                        style={styles.gradient}
+                    />
+                    <View>{tideItems}</View>
+                </View>
+            </View>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginBottom: 16,
     },
-    item: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white',
-        padding: 4,
+    coeffTitle: {
+        color: '#fff',
+        fontSize: 16,
+        textTransform: 'uppercase'
     },
-    cell: {
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
+    coeffContentContainer: {
+        position: 'relative',
+        marginTop: 12,
+        width: '100%',
+        height: '100%',
     },
-    text: {
-        fontSize: 12,
-        margin: 4,
-    },
-    title: {
+    gradient: {
         flex: 1,
-        margin: 16,
-        textAlign: 'center',
-        color: '#000',
-        fontSize: 28,
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        borderRadius: 8,
+    },
+    tideItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+    },
+    tideItemUnderline: {
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.5)',
+    },
+    tideColumn: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    tideColumnCoeff: {
+        flex: 1,
+        position: 'relative',
+    },
+    tideHour: {
+        color: '#fff',
+        fontSize: 12,
+    },
+    tideHeight: {
+        color: '#fff',
+        fontSize: 12,
+    },
+    tideCoeff: {
+        color: '#fff',
+        fontSize: 12,
+        position: 'absolute',
+        top: 8,
+        left: 44
     },
 });
 
